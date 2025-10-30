@@ -5,7 +5,14 @@
 			{
 				"name": "ForAllFiles",
 				"type": "ForEach",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Validation_githuib",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
@@ -88,6 +95,68 @@
 						}
 					]
 				}
+			},
+			{
+				"name": "Validation_githuib",
+				"type": "Validation",
+				"dependsOn": [
+					{
+						"activity": "github_metadata_variable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_validation",
+						"type": "DatasetReference"
+					},
+					"timeout": "0.12:00:00",
+					"sleep": 10
+				}
+			},
+			{
+				"name": "Web_github",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://github.com/rhythm-billore/netflix_azure_data_engineering_project"
+				}
+			},
+			{
+				"name": "github_metadata_variable",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Web_github",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "github_metadata",
+					"value": {
+						"value": "@activity('Web_github').output.Response",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"parameters": {
@@ -111,6 +180,11 @@
 						"file_name": "netflix_directors.csv"
 					}
 				]
+			}
+		},
+		"variables": {
+			"github_metadata": {
+				"type": "String"
 			}
 		},
 		"annotations": []
