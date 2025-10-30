@@ -16,7 +16,7 @@
 			"location": {
 				"type": "HttpServerLocation",
 				"relativeUrl": {
-					"value": "rhythm-billore/netflix_azure_data_engineering_project/refs/heads/main/@{dataset().file_name}",
+					"value": "netflix_azure_data_engineering_project/refs/heads/main/input_dataset/@{dataset().file_name}",
 					"type": "Expression"
 				}
 			},
