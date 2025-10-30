@@ -17,7 +17,7 @@
 		},
 		"github_con_properties_typeProperties_url": {
 			"type": "string",
-			"defaultValue": "https://raw.githubusercontent.com/"
+			"defaultValue": "https://raw.githubusercontent.com/rhythm-billore"
 		},
 		"containerUri": {
 			"type": "string",
