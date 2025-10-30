@@ -1,0 +1,16 @@
+{
+	"name": "netflixproject-ADF",
+	"properties": {
+		"globalConfigurations": {
+			"PipelineBillingEnabled": "true",
+			"factoryStagingLSReferenceName": "datalake_con",
+			"factoryStagingLSType": "LinkedServiceReference"
+		}
+	},
+	"location": "eastus2",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "5cb7288a-2183-460a-969b-9a746bc830a7",
+		"tenantId": "a8eec281-aaa3-4dae-ac9b-9a398b9215e7"
+	}
+}
