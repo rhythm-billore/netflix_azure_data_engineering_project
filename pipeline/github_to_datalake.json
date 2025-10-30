@@ -1,5 +1,5 @@
 {
-	"name": "pipeline1",
+	"name": "github_to_datalake",
 	"properties": {
 		"activities": [
 			{
