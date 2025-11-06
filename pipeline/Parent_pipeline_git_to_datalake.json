@@ -1,0 +1,53 @@
+{
+	"name": "Parent_pipeline_git_to_datalake",
+	"properties": {
+		"activities": [
+			{
+				"name": "ExecuteGithub_to_Datalake",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "github_to_datalake",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"p_array": {
+							"value": "@pipeline().parameters.p_array",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"p_array": {
+				"type": "array",
+				"defaultValue": [
+					{
+						"folder_name": "netflix_cast",
+						"file_name": "netflix_cast.csv"
+					},
+					{
+						"folder_name": "netflix_category",
+						"file_name": "netflix_category.csv"
+					},
+					{
+						"folder_name": "netflix_countries",
+						"file_name": "netflix_countries.csv"
+					},
+					{
+						"folder_name": "netflix_directors",
+						"file_name": "netflix_directors.csv"
+					}
+				]
+			}
+		},
+		"annotations": []
+	}
+}
