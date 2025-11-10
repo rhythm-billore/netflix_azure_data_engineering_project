@@ -31,7 +31,7 @@
 					{
 						"activity": "ExecuteGithub_to_Datalake",
 						"dependencyConditions": [
-							"Failed"
+							"Succeeded"
 						]
 					}
 				],
@@ -47,7 +47,7 @@
 					"method": "POST",
 					"url": "https://prod-58.eastus2.logic.azure.com:443/workflows/5b4a116cb61c41ae9daa9c43b4b6a925/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=-qCpleTl-pZyHXP572lXyy_-oqf2RhbUBvCW5lwy1WU",
 					"body": {
-						"value": "{\n    \"pipeline_name\": \"@{pipeline().Pipeline}\",\n    \"run_id\": \"@{pipeline().RunId}\",\n    \"status\": \"@{activity('ExecuteGithub_to_Datalake').output.status}\"\n    \"error_msg\": \"@{activity('ExecuteGithub_to_Datalake').output.error}\"\n}",
+						"value": "{\n    \"pipeline_name\": \"@{pipeline().Pipeline}\",\n    \"run_id\": \"@{pipeline().RunId}\",\n    \"status\": \"@{activity('ExecuteGithub_to_Datalake').Status}\"\n    \"error_msg\": \"@{activity('ExecuteGithub_to_Datalake').output.errors[0].message}\"\n}",
 						"type": "Expression"
 					}
 				}
