@@ -31,7 +31,7 @@
 					{
 						"activity": "ExecuteGithub_to_Datalake",
 						"dependencyConditions": [
-							"Succeeded"
+							"Failed"
 						]
 					}
 				],
