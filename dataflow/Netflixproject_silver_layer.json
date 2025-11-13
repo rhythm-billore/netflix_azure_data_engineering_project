@@ -40,7 +40,43 @@
 					"name": "NetflixTitles"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "datalake_con",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkCast"
+				},
+				{
+					"linkedService": {
+						"referenceName": "datalake_con",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkCategory"
+				},
+				{
+					"linkedService": {
+						"referenceName": "datalake_con",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkCountries"
+				},
+				{
+					"linkedService": {
+						"referenceName": "datalake_con",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkDirectors"
+				},
+				{
+					"linkedService": {
+						"referenceName": "datalake_con",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkTitles"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedCountryName",
@@ -53,6 +89,21 @@
 				{
 					"name": "derivedMins",
 					"description": "datatype change mins"
+				},
+				{
+					"name": "alterRowCast"
+				},
+				{
+					"name": "alterCategory"
+				},
+				{
+					"name": "alterCountires"
+				},
+				{
+					"name": "alterRowDirectors"
+				},
+				{
+					"name": "alterRowTitles"
 				}
 			],
 			"scriptLines": [
@@ -100,7 +151,107 @@
 				"     ignoreNoFilesFound: false) ~> NetflixTitles",
 				"NetflixCountries derive(country = upper(trim(country))) ~> derivedCountryName",
 				"NetflixTitles derive(release_year = toInteger(release_year)) ~> derivedReleaseYear",
-				"derivedReleaseYear derive(duration_minutes = toInteger(duration_minutes)) ~> derivedMins"
+				"derivedReleaseYear derive(duration_minutes = toInteger(duration_minutes)) ~> derivedMins",
+				"NetflixCast alterRow(upsertIf(1==1)) ~> alterRowCast",
+				"NetflixCategory alterRow(upsertIf(1==1)) ~> alterCategory",
+				"derivedCountryName alterRow(upsertIf(1==1)) ~> alterCountires",
+				"NetflixDirectors alterRow(upsertIf(1==1)) ~> alterRowDirectors",
+				"derivedMins alterRow(upsertIf(1==1)) ~> alterRowTitles",
+				"alterRowCast sink(allowSchemaDrift: true,",
+				"     validateSchema: true,",
+				"     format: 'delta',",
+				"     fileSystem: 'silver',",
+				"     folderPath: 'NetflixCast',",
+				"     mergeSchema: false,",
+				"     autoCompact: false,",
+				"     optimizedWrite: false,",
+				"     vacuum: 0,",
+				"     deletable: false,",
+				"     insertable: false,",
+				"     updateable: false,",
+				"     upsertable: true,",
+				"     keys:['show_id'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkCast",
+				"alterCategory sink(allowSchemaDrift: true,",
+				"     validateSchema: true,",
+				"     format: 'delta',",
+				"     fileSystem: 'silver',",
+				"     folderPath: 'NetflixCategory',",
+				"     mergeSchema: false,",
+				"     autoCompact: false,",
+				"     optimizedWrite: false,",
+				"     vacuum: 0,",
+				"     deletable: false,",
+				"     insertable: false,",
+				"     updateable: false,",
+				"     upsertable: true,",
+				"     keys:['show_id'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkCategory",
+				"alterCountires sink(allowSchemaDrift: true,",
+				"     validateSchema: true,",
+				"     format: 'delta',",
+				"     fileSystem: 'silver',",
+				"     folderPath: 'NetflixCountries',",
+				"     mergeSchema: false,",
+				"     autoCompact: false,",
+				"     optimizedWrite: false,",
+				"     vacuum: 0,",
+				"     deletable: false,",
+				"     insertable: false,",
+				"     updateable: false,",
+				"     upsertable: true,",
+				"     keys:['show_id'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkCountries",
+				"alterRowDirectors sink(allowSchemaDrift: true,",
+				"     validateSchema: true,",
+				"     format: 'delta',",
+				"     fileSystem: 'silver',",
+				"     folderPath: 'NetflixDirectors',",
+				"     mergeSchema: false,",
+				"     autoCompact: false,",
+				"     optimizedWrite: false,",
+				"     vacuum: 0,",
+				"     deletable: false,",
+				"     insertable: false,",
+				"     updateable: false,",
+				"     upsertable: true,",
+				"     keys:['show_id'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkDirectors",
+				"alterRowTitles sink(allowSchemaDrift: true,",
+				"     validateSchema: true,",
+				"     format: 'delta',",
+				"     fileSystem: 'silver',",
+				"     folderPath: 'NetflixTitles',",
+				"     mergeSchema: false,",
+				"     autoCompact: false,",
+				"     optimizedWrite: false,",
+				"     vacuum: 0,",
+				"     deletable: false,",
+				"     insertable: false,",
+				"     updateable: false,",
+				"     upsertable: true,",
+				"     keys:['show_id'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkTitles"
 			]
 		}
 	}
