@@ -1,5 +1,5 @@
 {
-	"name": "dataflow1",
+	"name": "Netflixproject_silver_layer",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -41,7 +41,19 @@
 				}
 			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "derivedCountryName",
+					"description": "Updating country name "
+				},
+				{
+					"name": "derivedReleaseYear",
+					"description": "typecast release_year float to int"
+				},
+				{
+					"name": "aggregatetype"
+				}
+			],
 			"scriptLines": [
 				"source(output(",
 				"          cast as string,",
@@ -84,7 +96,11 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false) ~> NetflixTitles"
+				"     ignoreNoFilesFound: false) ~> NetflixTitles",
+				"NetflixCountries derive(country = upper(trim(country))) ~> derivedCountryName",
+				"NetflixTitles derive(release_year = toInteger(release_year)) ~> derivedReleaseYear",
+				"derivedReleaseYear aggregate(groupBy(type),",
+				"     count_rows = count(1)) ~> aggregatetype"
 			]
 		}
 	}
