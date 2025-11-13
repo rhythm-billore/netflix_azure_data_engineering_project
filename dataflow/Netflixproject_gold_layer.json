@@ -1,0 +1,139 @@
+{
+	"name": "Netflixproject_gold_layer",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "datalake_con",
+						"type": "LinkedServiceReference"
+					},
+					"name": "NetflixCastGold"
+				},
+				{
+					"linkedService": {
+						"referenceName": "datalake_con",
+						"type": "LinkedServiceReference"
+					},
+					"name": "NeflixCategoryGold"
+				},
+				{
+					"linkedService": {
+						"referenceName": "datalake_con",
+						"type": "LinkedServiceReference"
+					},
+					"name": "NetflixCountriesGold"
+				},
+				{
+					"linkedService": {
+						"referenceName": "datalake_con",
+						"type": "LinkedServiceReference"
+					},
+					"name": "NetflixDirectorsGold"
+				},
+				{
+					"linkedService": {
+						"referenceName": "datalake_con",
+						"type": "LinkedServiceReference"
+					},
+					"name": "NetflixTitlesGold"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "joinDirectorTitles"
+				},
+				{
+					"name": "selectColumns"
+				},
+				{
+					"name": "aggregateDirectorbyshows"
+				},
+				{
+					"name": "rankDirectors"
+				}
+			],
+			"scriptLines": [
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delta',",
+				"     fileSystem: 'silver',",
+				"     folderPath: 'NetflixCast') ~> NetflixCastGold",
+				"source(output(",
+				"          listed_in as string,",
+				"          show_id as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delta',",
+				"     fileSystem: 'silver',",
+				"     folderPath: 'NetflixCategory') ~> NeflixCategoryGold",
+				"source(output(",
+				"          country as string,",
+				"          show_id as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delta',",
+				"     fileSystem: 'silver',",
+				"     folderPath: 'NetflixCountries') ~> NetflixCountriesGold",
+				"source(output(",
+				"          director as string,",
+				"          show_id as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delta',",
+				"     fileSystem: 'silver',",
+				"     folderPath: 'NetflixDirectors') ~> NetflixDirectorsGold",
+				"source(output(",
+				"          duration_minutes as integer,",
+				"          duration_seasons as integer,",
+				"          type as string,",
+				"          title as string,",
+				"          date_added as string,",
+				"          release_year as integer,",
+				"          rating as string,",
+				"          description as string,",
+				"          show_id as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delta',",
+				"     fileSystem: 'silver',",
+				"     folderPath: 'NetflixTitles') ~> NetflixTitlesGold",
+				"NetflixTitlesGold, NetflixDirectorsGold join(NetflixTitlesGold@show_id == NetflixDirectorsGold@show_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinDirectorTitles",
+				"joinDirectorTitles select(mapColumn(",
+				"          duration_minutes,",
+				"          duration_seasons,",
+				"          type,",
+				"          title,",
+				"          date_added,",
+				"          release_year,",
+				"          rating,",
+				"          description,",
+				"          show_id = NetflixTitlesGold@show_id,",
+				"          director",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectColumns",
+				"selectColumns aggregate(groupBy(director),",
+				"     show_count = count(show_id)) ~> aggregateDirectorbyshows",
+				"aggregateDirectorbyshows rank(desc(show_count, true),",
+				"     output(Top as long),",
+				"     dense: true) ~> rankDirectors"
+			]
+		}
+	}
+}
