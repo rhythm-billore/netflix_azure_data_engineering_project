@@ -51,7 +51,8 @@
 					"description": "typecast release_year float to int"
 				},
 				{
-					"name": "aggregatetype"
+					"name": "derivedMins",
+					"description": "datatype change mins"
 				}
 			],
 			"scriptLines": [
@@ -85,11 +86,11 @@
 				"     ignoreNoFilesFound: false) ~> NetflixDirectors",
 				"source(output(",
 				"          duration_minutes as short,",
-				"          duration_seasons as boolean,",
+				"          duration_seasons as integer,",
 				"          type as string,",
 				"          title as string,",
-				"          date_added as date,",
-				"          release_year as short,",
+				"          date_added as string,",
+				"          release_year as integer,",
 				"          rating as string,",
 				"          description as string,",
 				"          show_id as string",
@@ -99,8 +100,7 @@
 				"     ignoreNoFilesFound: false) ~> NetflixTitles",
 				"NetflixCountries derive(country = upper(trim(country))) ~> derivedCountryName",
 				"NetflixTitles derive(release_year = toInteger(release_year)) ~> derivedReleaseYear",
-				"derivedReleaseYear aggregate(groupBy(type),",
-				"     count_rows = count(1)) ~> aggregatetype"
+				"derivedReleaseYear derive(duration_minutes = toInteger(duration_minutes)) ~> derivedMins"
 			]
 		}
 	}
