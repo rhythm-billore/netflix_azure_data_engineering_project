@@ -1,0 +1,59 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_cast",
+						"type": "DatasetReference"
+					},
+					"name": "NetflixCast"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_category",
+						"type": "DatasetReference"
+					},
+					"name": "NetflixCategory"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_countries",
+						"type": "DatasetReference"
+					},
+					"name": "NetflixCountries"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_directors",
+						"type": "DatasetReference"
+					},
+					"name": "NetflixDirectors"
+				},
+				{
+					"name": "NetflixTitles"
+				}
+			],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> NetflixCast",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> NetflixCategory",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> NetflixCountries",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> NetflixDirectors",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false) ~> NetflixTitles"
+			]
+		}
+	}
+}
