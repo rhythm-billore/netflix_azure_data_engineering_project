@@ -33,26 +33,58 @@
 					"name": "NetflixDirectors"
 				},
 				{
+					"dataset": {
+						"referenceName": "ds_titles",
+						"type": "DatasetReference"
+					},
 					"name": "NetflixTitles"
 				}
 			],
 			"sinks": [],
 			"transformations": [],
 			"scriptLines": [
-				"source(allowSchemaDrift: true,",
+				"source(output(",
+				"          cast as string,",
+				"          show_id as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> NetflixCast",
-				"source(allowSchemaDrift: true,",
+				"source(output(",
+				"          listed_in as string,",
+				"          show_id as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> NetflixCategory",
-				"source(allowSchemaDrift: true,",
+				"source(output(",
+				"          country as string,",
+				"          show_id as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> NetflixCountries",
-				"source(allowSchemaDrift: true,",
+				"source(output(",
+				"          director as string,",
+				"          show_id as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> NetflixDirectors",
-				"source(allowSchemaDrift: true,",
-				"     validateSchema: false) ~> NetflixTitles"
+				"source(output(",
+				"          duration_minutes as short,",
+				"          duration_seasons as boolean,",
+				"          type as string,",
+				"          title as string,",
+				"          date_added as date,",
+				"          release_year as short,",
+				"          rating as string,",
+				"          description as string,",
+				"          show_id as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> NetflixTitles"
 			]
 		}
 	}
