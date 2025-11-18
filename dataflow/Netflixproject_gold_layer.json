@@ -38,9 +38,52 @@
 						"type": "LinkedServiceReference"
 					},
 					"name": "NetflixTitlesGold"
+				},
+				{
+					"linkedService": {
+						"referenceName": "datalake_con",
+						"type": "LinkedServiceReference"
+					},
+					"name": "NetflixTitlesGoldNew"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "datalake_con",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkCastGold"
+				},
+				{
+					"linkedService": {
+						"referenceName": "datalake_con",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkCategoryGold"
+				},
+				{
+					"linkedService": {
+						"referenceName": "datalake_con",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkCountriesGold"
+				},
+				{
+					"linkedService": {
+						"referenceName": "datalake_con",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkDirectorsGold"
+				},
+				{
+					"linkedService": {
+						"referenceName": "datalake_con",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkTitlesGold"
+				}
+			],
 			"transformations": [
 				{
 					"name": "joinDirectorTitles"
@@ -53,6 +96,21 @@
 				},
 				{
 					"name": "rankDirectors"
+				},
+				{
+					"name": "alterRowCastGold"
+				},
+				{
+					"name": "alterRowCategoryGold"
+				},
+				{
+					"name": "alterRowCountriesGold"
+				},
+				{
+					"name": "alterRowDirectorsGold"
+				},
+				{
+					"name": "alterRowTitles"
 				}
 			],
 			"scriptLines": [
@@ -109,6 +167,12 @@
 				"     format: 'delta',",
 				"     fileSystem: 'silver',",
 				"     folderPath: 'NetflixTitles') ~> NetflixTitlesGold",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delta',",
+				"     fileSystem: 'silver',",
+				"     folderPath: 'NetflixTitles') ~> NetflixTitlesGoldNew",
 				"NetflixTitlesGold, NetflixDirectorsGold join(NetflixTitlesGold@show_id == NetflixDirectorsGold@show_id,",
 				"     joinType:'inner',",
 				"     matchType:'exact',",
@@ -132,7 +196,107 @@
 				"     show_count = count(show_id)) ~> aggregateDirectorbyshows",
 				"aggregateDirectorbyshows rank(desc(show_count, true),",
 				"     output(Top as long),",
-				"     dense: true) ~> rankDirectors"
+				"     dense: true) ~> rankDirectors",
+				"NetflixCastGold alterRow(insertIf(1==1)) ~> alterRowCastGold",
+				"NeflixCategoryGold alterRow(insertIf(1==1)) ~> alterRowCategoryGold",
+				"NetflixCountriesGold alterRow(insertIf(1==1)) ~> alterRowCountriesGold",
+				"NetflixDirectorsGold alterRow(insertIf(1==1)) ~> alterRowDirectorsGold",
+				"NetflixTitlesGoldNew alterRow(insertIf(1==1)) ~> alterRowTitles",
+				"alterRowCastGold sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delta',",
+				"     fileSystem: 'gold',",
+				"     folderPath: 'CastGold',",
+				"     overwrite: true,",
+				"     mergeSchema: false,",
+				"     autoCompact: false,",
+				"     optimizedWrite: false,",
+				"     vacuum: 0,",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkCastGold",
+				"alterRowCategoryGold sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delta',",
+				"     fileSystem: 'gold',",
+				"     folderPath: 'CategoryGold',",
+				"     overwrite: true,",
+				"     mergeSchema: false,",
+				"     autoCompact: false,",
+				"     optimizedWrite: false,",
+				"     vacuum: 0,",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkCategoryGold",
+				"alterRowCountriesGold sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delta',",
+				"     fileSystem: 'gold',",
+				"     folderPath: 'CountriesGold',",
+				"     overwrite: true,",
+				"     mergeSchema: false,",
+				"     autoCompact: false,",
+				"     optimizedWrite: false,",
+				"     vacuum: 0,",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkCountriesGold",
+				"alterRowDirectorsGold sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delta',",
+				"     fileSystem: 'gold',",
+				"     folderPath: 'DirectorsGold',",
+				"     overwrite: true,",
+				"     mergeSchema: false,",
+				"     autoCompact: false,",
+				"     optimizedWrite: false,",
+				"     vacuum: 0,",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkDirectorsGold",
+				"alterRowTitles sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delta',",
+				"     fileSystem: 'gold',",
+				"     folderPath: 'TitlesGold',",
+				"     overwrite: true,",
+				"     mergeSchema: false,",
+				"     autoCompact: false,",
+				"     optimizedWrite: false,",
+				"     vacuum: 0,",
+				"     deletable: false,",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     upsertable: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkTitlesGold"
 			]
 		}
 	}
