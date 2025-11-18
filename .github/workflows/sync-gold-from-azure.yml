@@ -24,6 +24,7 @@ jobs:
         uses: azure/cli@v2
         with:
           inlineScript: |
+            mkdir -p ./gold_from_azure
             az storage blob download-batch \
               --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
               --source ${{ secrets.AZURE_STORAGE_CONTAINER }} \
