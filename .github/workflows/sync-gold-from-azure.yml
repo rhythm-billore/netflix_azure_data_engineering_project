@@ -1,0 +1,47 @@
+name: Sync gold container from Azure Storage to GitHub
+
+on:
+  # run manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-gold:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Download blobs from gold container
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az storage blob download-batch \
+              --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+              --source ${{ secrets.AZURE_STORAGE_CONTAINER }} \
+              --destination ./gold_from_azure \
+              --auth-mode login
+
+      - name: Commit and push changes (if any)
+        run: |
+          ls -R
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add gold_from_azure
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Sync gold container from Azure Storage"
+            git push
+          fi
