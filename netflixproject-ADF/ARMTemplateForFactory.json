@@ -25,6 +25,205 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/GoldLayer')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "DataFlowGoldLayer",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Netflixproject_gold_layer",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"NetflixCastGold": {},
+									"NeflixCategoryGold": {},
+									"NetflixCountriesGold": {},
+									"NetflixDirectorsGold": {},
+									"NetflixTitlesGold": {},
+									"NetflixTitlesGoldNew": {},
+									"sinkCastGold": {},
+									"sinkCategoryGold": {},
+									"sinkCountriesGold": {},
+									"sinkDirectorsGold": {},
+									"sinkTitlesGold": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Netflixproject_gold_layer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Parent_pipeline_git_to_datalake')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ExecuteGithub_to_Datalake",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "github_to_datalake",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"p_array": {
+									"value": "@pipeline().parameters.p_array",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "FailureAlert",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "ExecuteGithub_to_Datalake",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {},
+							"url": "https://prod-58.eastus2.logic.azure.com:443/workflows/5b4a116cb61c41ae9daa9c43b4b6a925/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=-qCpleTl-pZyHXP572lXyy_-oqf2RhbUBvCW5lwy1WU",
+							"body": {
+								"value": "{\n    \"pipeline_name\": \"@{pipeline().Pipeline}\",\n    \"run_id\": \"@{pipeline().RunId}\",\n    \"status\": \"@{activity('ExecuteGithub_to_Datalake').Status}\",\n    \"error_msg\": \"@{if(equals(activity('ExecuteGithub_to_Datalake').Status, 'Failed'),string(activity('ExecuteGithub_to_Datalake').error),'No_error')}\"\n}",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"p_array": {
+						"type": "array",
+						"defaultValue": [
+							{
+								"folder_name": "netflix_cast",
+								"file_name": "netflix_cast.csv"
+							},
+							{
+								"folder_name": "netflix_category",
+								"file_name": "netflix_category.csv"
+							},
+							{
+								"folder_name": "netflix_countries",
+								"file_name": "netflix_countries.csv"
+							},
+							{
+								"folder_name": "netflix_directors",
+								"file_name": "netflix_directors.csv"
+							}
+						]
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/github_to_datalake')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SilverLayerCreation')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "DataFlowSilverLayer",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Netflixproject_silver_layer",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"NetflixCast": {},
+									"NetflixCategory": {},
+									"NetflixCountries": {},
+									"NetflixDirectors": {},
+									"NetflixTitles": {},
+									"sinkCast": {},
+									"sinkCategory": {},
+									"sinkCountries": {},
+									"sinkDirectors": {},
+									"sinkTitles": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Netflixproject_silver_layer')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/github_to_datalake')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -211,6 +410,10 @@
 							{
 								"folder_name": "netflix_directors",
 								"file_name": "netflix_directors.csv"
+							},
+							{
+								"folder_name": "netflix_titles",
+								"file_name": "netflix_titles.csv"
 							}
 						]
 					}
@@ -226,6 +429,90 @@
 				"[concat(variables('factoryId'), '/datasets/ds_validation')]",
 				"[concat(variables('factoryId'), '/datasets/ds_github')]",
 				"[concat(variables('factoryId'), '/datasets/ds_datalake')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_cast')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "datalake_con",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "netflix_cast.csv",
+						"fileSystem": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/datalake_con')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_category')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "datalake_con",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "netflix_category.csv",
+						"fileSystem": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/datalake_con')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_countries')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "datalake_con",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "netflix_countries.csv",
+						"fileSystem": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/datalake_con')]"
 			]
 		},
 		{
@@ -309,6 +596,34 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_directors')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "datalake_con",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "netflix_directors.csv",
+						"fileSystem": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/datalake_con')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_github')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -341,6 +656,34 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/github_con')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_titles')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "datalake_con",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "netflix_titles.csv",
+						"fileSystem": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/datalake_con')]"
 			]
 		},
 		{
@@ -440,93 +783,579 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Parent_pipeline_git_to_datalake')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
+			"name": "[concat(parameters('factoryName'), '/Netflixproject_gold_layer')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"activities": [
-					{
-						"name": "ExecuteGithub_to_Datalake",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"policy": {
-							"secureInput": false
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "datalake_con",
+								"type": "LinkedServiceReference"
+							},
+							"name": "NetflixCastGold"
 						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "github_to_datalake",
-								"type": "PipelineReference"
+						{
+							"linkedService": {
+								"referenceName": "datalake_con",
+								"type": "LinkedServiceReference"
 							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"p_array": {
-									"value": "@pipeline().parameters.p_array",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "FailureAlert",
-						"type": "WebActivity",
-						"dependsOn": [
-							{
-								"activity": "ExecuteGithub_to_Datalake",
-								"dependencyConditions": [
-									"Failed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
+							"name": "NeflixCategoryGold"
 						},
-						"userProperties": [],
-						"typeProperties": {
-							"method": "POST",
-							"headers": {},
-							"url": "https://prod-58.eastus2.logic.azure.com:443/workflows/5b4a116cb61c41ae9daa9c43b4b6a925/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=-qCpleTl-pZyHXP572lXyy_-oqf2RhbUBvCW5lwy1WU",
-							"body": {
-								"value": "{\n    \"pipeline_name\": \"@{pipeline().Pipeline}\",\n    \"run_id\": \"@{pipeline().RunId}\",\n    \"status\": \"@{activity('ExecuteGithub_to_Datalake').Status}\",\n    \"error_msg\": \"@{if(equals(activity('ExecuteGithub_to_Datalake').Status, 'Failed'),string(activity('ExecuteGithub_to_Datalake').error),'No_error')}\"\n}",
-								"type": "Expression"
-							}
+						{
+							"linkedService": {
+								"referenceName": "datalake_con",
+								"type": "LinkedServiceReference"
+							},
+							"name": "NetflixCountriesGold"
+						},
+						{
+							"linkedService": {
+								"referenceName": "datalake_con",
+								"type": "LinkedServiceReference"
+							},
+							"name": "NetflixDirectorsGold"
+						},
+						{
+							"linkedService": {
+								"referenceName": "datalake_con",
+								"type": "LinkedServiceReference"
+							},
+							"name": "NetflixTitlesGold"
+						},
+						{
+							"linkedService": {
+								"referenceName": "datalake_con",
+								"type": "LinkedServiceReference"
+							},
+							"name": "NetflixTitlesGoldNew"
 						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"p_array": {
-						"type": "array",
-						"defaultValue": [
-							{
-								"folder_name": "netflix_cast",
-								"file_name": "netflix_cast.csv"
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "datalake_con",
+								"type": "LinkedServiceReference"
 							},
-							{
-								"folder_name": "netflix_category",
-								"file_name": "netflix_category.csv"
+							"name": "sinkCastGold"
+						},
+						{
+							"linkedService": {
+								"referenceName": "datalake_con",
+								"type": "LinkedServiceReference"
 							},
-							{
-								"folder_name": "netflix_countries",
-								"file_name": "netflix_countries.csv"
+							"name": "sinkCategoryGold"
+						},
+						{
+							"linkedService": {
+								"referenceName": "datalake_con",
+								"type": "LinkedServiceReference"
 							},
-							{
-								"folder_name": "netflix_directors",
-								"file_name": "netflix_directors.csv"
-							}
-						]
-					}
-				},
-				"annotations": []
+							"name": "sinkCountriesGold"
+						},
+						{
+							"linkedService": {
+								"referenceName": "datalake_con",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkDirectorsGold"
+						},
+						{
+							"linkedService": {
+								"referenceName": "datalake_con",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkTitlesGold"
+						}
+					],
+					"transformations": [
+						{
+							"name": "joinDirectorTitles"
+						},
+						{
+							"name": "selectColumns"
+						},
+						{
+							"name": "aggregateDirectorbyshows"
+						},
+						{
+							"name": "rankDirectors"
+						},
+						{
+							"name": "alterRowCastGold"
+						},
+						{
+							"name": "alterRowCategoryGold"
+						},
+						{
+							"name": "alterRowCountriesGold"
+						},
+						{
+							"name": "alterRowDirectorsGold"
+						},
+						{
+							"name": "alterRowTitles"
+						}
+					],
+					"scriptLines": [
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delta',",
+						"     fileSystem: 'silver',",
+						"     folderPath: 'NetflixCast') ~> NetflixCastGold",
+						"source(output(",
+						"          listed_in as string,",
+						"          show_id as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delta',",
+						"     fileSystem: 'silver',",
+						"     folderPath: 'NetflixCategory') ~> NeflixCategoryGold",
+						"source(output(",
+						"          country as string,",
+						"          show_id as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delta',",
+						"     fileSystem: 'silver',",
+						"     folderPath: 'NetflixCountries') ~> NetflixCountriesGold",
+						"source(output(",
+						"          director as string,",
+						"          show_id as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delta',",
+						"     fileSystem: 'silver',",
+						"     folderPath: 'NetflixDirectors') ~> NetflixDirectorsGold",
+						"source(output(",
+						"          duration_minutes as integer,",
+						"          duration_seasons as integer,",
+						"          type as string,",
+						"          title as string,",
+						"          date_added as string,",
+						"          release_year as integer,",
+						"          rating as string,",
+						"          description as string,",
+						"          show_id as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delta',",
+						"     fileSystem: 'silver',",
+						"     folderPath: 'NetflixTitles') ~> NetflixTitlesGold",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delta',",
+						"     fileSystem: 'silver',",
+						"     folderPath: 'NetflixTitles') ~> NetflixTitlesGoldNew",
+						"NetflixTitlesGold, NetflixDirectorsGold join(NetflixTitlesGold@show_id == NetflixDirectorsGold@show_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinDirectorTitles",
+						"joinDirectorTitles select(mapColumn(",
+						"          duration_minutes,",
+						"          duration_seasons,",
+						"          type,",
+						"          title,",
+						"          date_added,",
+						"          release_year,",
+						"          rating,",
+						"          description,",
+						"          show_id = NetflixTitlesGold@show_id,",
+						"          director",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectColumns",
+						"selectColumns aggregate(groupBy(director),",
+						"     show_count = count(show_id)) ~> aggregateDirectorbyshows",
+						"aggregateDirectorbyshows rank(desc(show_count, true),",
+						"     output(Top as long),",
+						"     dense: true) ~> rankDirectors",
+						"NetflixCastGold alterRow(insertIf(1==1)) ~> alterRowCastGold",
+						"NeflixCategoryGold alterRow(insertIf(1==1)) ~> alterRowCategoryGold",
+						"NetflixCountriesGold alterRow(insertIf(1==1)) ~> alterRowCountriesGold",
+						"NetflixDirectorsGold alterRow(insertIf(1==1)) ~> alterRowDirectorsGold",
+						"NetflixTitlesGoldNew alterRow(insertIf(1==1)) ~> alterRowTitles",
+						"alterRowCastGold sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delta',",
+						"     fileSystem: 'gold',",
+						"     folderPath: 'CastGold',",
+						"     overwrite: true,",
+						"     mergeSchema: false,",
+						"     autoCompact: false,",
+						"     optimizedWrite: false,",
+						"     vacuum: 0,",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sinkCastGold",
+						"alterRowCategoryGold sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delta',",
+						"     fileSystem: 'gold',",
+						"     folderPath: 'CategoryGold',",
+						"     overwrite: true,",
+						"     mergeSchema: false,",
+						"     autoCompact: false,",
+						"     optimizedWrite: false,",
+						"     vacuum: 0,",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sinkCategoryGold",
+						"alterRowCountriesGold sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delta',",
+						"     fileSystem: 'gold',",
+						"     folderPath: 'CountriesGold',",
+						"     overwrite: true,",
+						"     mergeSchema: false,",
+						"     autoCompact: false,",
+						"     optimizedWrite: false,",
+						"     vacuum: 0,",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sinkCountriesGold",
+						"alterRowDirectorsGold sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delta',",
+						"     fileSystem: 'gold',",
+						"     folderPath: 'DirectorsGold',",
+						"     overwrite: true,",
+						"     mergeSchema: false,",
+						"     autoCompact: false,",
+						"     optimizedWrite: false,",
+						"     vacuum: 0,",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sinkDirectorsGold",
+						"alterRowTitles sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delta',",
+						"     fileSystem: 'gold',",
+						"     folderPath: 'TitlesGold',",
+						"     overwrite: true,",
+						"     mergeSchema: false,",
+						"     autoCompact: false,",
+						"     optimizedWrite: false,",
+						"     vacuum: 0,",
+						"     deletable: false,",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     upsertable: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sinkTitlesGold"
+					]
+				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/github_to_datalake')]"
+				"[concat(variables('factoryId'), '/linkedServices/datalake_con')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Netflixproject_silver_layer')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_cast",
+								"type": "DatasetReference"
+							},
+							"name": "NetflixCast"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_category",
+								"type": "DatasetReference"
+							},
+							"name": "NetflixCategory"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_countries",
+								"type": "DatasetReference"
+							},
+							"name": "NetflixCountries"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_directors",
+								"type": "DatasetReference"
+							},
+							"name": "NetflixDirectors"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_titles",
+								"type": "DatasetReference"
+							},
+							"name": "NetflixTitles"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "datalake_con",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkCast"
+						},
+						{
+							"linkedService": {
+								"referenceName": "datalake_con",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkCategory"
+						},
+						{
+							"linkedService": {
+								"referenceName": "datalake_con",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkCountries"
+						},
+						{
+							"linkedService": {
+								"referenceName": "datalake_con",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkDirectors"
+						},
+						{
+							"linkedService": {
+								"referenceName": "datalake_con",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkTitles"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedCountryName",
+							"description": "Updating country name "
+						},
+						{
+							"name": "derivedReleaseYear",
+							"description": "typecast release_year float to int"
+						},
+						{
+							"name": "derivedMins",
+							"description": "datatype change mins"
+						},
+						{
+							"name": "alterRowCast"
+						},
+						{
+							"name": "alterCategory"
+						},
+						{
+							"name": "alterCountires"
+						},
+						{
+							"name": "alterRowDirectors"
+						},
+						{
+							"name": "alterRowTitles"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          cast as string,",
+						"          show_id as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> NetflixCast",
+						"source(output(",
+						"          listed_in as string,",
+						"          show_id as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> NetflixCategory",
+						"source(output(",
+						"          country as string,",
+						"          show_id as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> NetflixCountries",
+						"source(output(",
+						"          director as string,",
+						"          show_id as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> NetflixDirectors",
+						"source(output(",
+						"          duration_minutes as short,",
+						"          duration_seasons as integer,",
+						"          type as string,",
+						"          title as string,",
+						"          date_added as string,",
+						"          release_year as integer,",
+						"          rating as string,",
+						"          description as string,",
+						"          show_id as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> NetflixTitles",
+						"NetflixCountries derive(country = upper(trim(country))) ~> derivedCountryName",
+						"NetflixTitles derive(release_year = toInteger(release_year)) ~> derivedReleaseYear",
+						"derivedReleaseYear derive(duration_minutes = toInteger(duration_minutes)) ~> derivedMins",
+						"NetflixCast alterRow(upsertIf(1==1)) ~> alterRowCast",
+						"NetflixCategory alterRow(upsertIf(1==1)) ~> alterCategory",
+						"derivedCountryName alterRow(upsertIf(1==1)) ~> alterCountires",
+						"NetflixDirectors alterRow(upsertIf(1==1)) ~> alterRowDirectors",
+						"derivedMins alterRow(upsertIf(1==1)) ~> alterRowTitles",
+						"alterRowCast sink(allowSchemaDrift: true,",
+						"     validateSchema: true,",
+						"     format: 'delta',",
+						"     fileSystem: 'silver',",
+						"     folderPath: 'NetflixCast',",
+						"     mergeSchema: false,",
+						"     autoCompact: false,",
+						"     optimizedWrite: false,",
+						"     vacuum: 0,",
+						"     deletable: false,",
+						"     insertable: false,",
+						"     updateable: false,",
+						"     upsertable: true,",
+						"     keys:['show_id'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sinkCast",
+						"alterCategory sink(allowSchemaDrift: true,",
+						"     validateSchema: true,",
+						"     format: 'delta',",
+						"     fileSystem: 'silver',",
+						"     folderPath: 'NetflixCategory',",
+						"     mergeSchema: false,",
+						"     autoCompact: false,",
+						"     optimizedWrite: false,",
+						"     vacuum: 0,",
+						"     deletable: false,",
+						"     insertable: false,",
+						"     updateable: false,",
+						"     upsertable: true,",
+						"     keys:['show_id'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sinkCategory",
+						"alterCountires sink(allowSchemaDrift: true,",
+						"     validateSchema: true,",
+						"     format: 'delta',",
+						"     fileSystem: 'silver',",
+						"     folderPath: 'NetflixCountries',",
+						"     mergeSchema: false,",
+						"     autoCompact: false,",
+						"     optimizedWrite: false,",
+						"     vacuum: 0,",
+						"     deletable: false,",
+						"     insertable: false,",
+						"     updateable: false,",
+						"     upsertable: true,",
+						"     keys:['show_id'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sinkCountries",
+						"alterRowDirectors sink(allowSchemaDrift: true,",
+						"     validateSchema: true,",
+						"     format: 'delta',",
+						"     fileSystem: 'silver',",
+						"     folderPath: 'NetflixDirectors',",
+						"     mergeSchema: false,",
+						"     autoCompact: false,",
+						"     optimizedWrite: false,",
+						"     vacuum: 0,",
+						"     deletable: false,",
+						"     insertable: false,",
+						"     updateable: false,",
+						"     upsertable: true,",
+						"     keys:['show_id'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sinkDirectors",
+						"alterRowTitles sink(allowSchemaDrift: true,",
+						"     validateSchema: true,",
+						"     format: 'delta',",
+						"     fileSystem: 'silver',",
+						"     folderPath: 'NetflixTitles',",
+						"     mergeSchema: false,",
+						"     autoCompact: false,",
+						"     optimizedWrite: false,",
+						"     vacuum: 0,",
+						"     deletable: false,",
+						"     insertable: false,",
+						"     updateable: false,",
+						"     upsertable: true,",
+						"     keys:['show_id'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sinkTitles"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_cast')]",
+				"[concat(variables('factoryId'), '/datasets/ds_category')]",
+				"[concat(variables('factoryId'), '/datasets/ds_countries')]",
+				"[concat(variables('factoryId'), '/datasets/ds_directors')]",
+				"[concat(variables('factoryId'), '/datasets/ds_titles')]",
+				"[concat(variables('factoryId'), '/linkedServices/datalake_con')]"
 			]
 		}
 	]
